@@ -1,0 +1,30 @@
+# Core
+httpx[http2,socks]
+beautifulsoup4
+playwright
+asyncpg
+redis[hiredis]
+pydantic>=2.0
+python-dotenv
+loguru
+
+# API / Dashboard
+fastapi
+uvicorn[standard]
+websockets
+python-multipart
+
+# Proxy / HTTP
+urllib3
+certifi
+
+# Selenium (phone number)
+selenium
+webdriver-manager
+
+# Exports
+lxml
+
+# Dev
+pytest
+pytest-asyncio

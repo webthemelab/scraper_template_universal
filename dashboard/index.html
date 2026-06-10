@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minimo Scraper Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e1a;--s:#111827;--s2:#1a2235;--b:#1e2d45;--a:#00d4ff;--a2:#7c3aed;
+  --g:#10b981;--r:#ef4444;--y:#f59e0b;--t:#e2e8f0;--m:#64748b;
+  --mono:'JetBrains Mono',monospace;--sans:'Syne',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--t);font-family:var(--sans);min-height:100vh;}
+.app{display:grid;grid-template-rows:56px 1fr;min-height:100vh;}
+.hd{display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;border-bottom:1px solid var(--b);background:var(--s);}
+.logo{font-size:18px;font-weight:800;}.logo span{color:var(--a);}
+.pill{display:flex;align-items:center;gap:8px;padding:4px 14px;border-radius:100px;
+  font-family:var(--mono);font-size:12px;background:var(--s2);border:1px solid var(--b);}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--m);}
+.dot.running{background:var(--g);animation:p 1.2s infinite;}
+.dot.stopping{background:var(--y);animation:p .6s infinite;}
+.dot.done{background:var(--a);}
+@keyframes p{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
+.main{display:grid;grid-template-columns:272px 1fr;height:calc(100vh - 56px);overflow:hidden;}
+.sb{background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;overflow-y:auto;padding:20px;}
+.ct{display:flex;flex-direction:column;overflow:hidden;}
+.tabs{display:flex;border-bottom:1px solid var(--b);background:var(--s);padding:0 20px;}
+.tab{padding:13px 18px;font-size:13px;font-weight:600;cursor:pointer;
+  border-bottom:2px solid transparent;color:var(--m);transition:all .2s;}
+.tab:hover{color:var(--t);}.tab.active{color:var(--a);border-bottom-color:var(--a);}
+.tp{display:none;flex:1;overflow:auto;padding:20px;}.tp.active{display:block;}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.sc{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:16px;}
+.sl{font-size:11px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.sv{font-size:26px;font-weight:800;font-family:var(--mono);}
+.sv.g{color:var(--g);}.sv.r{color:var(--r);}.sv.a{color:var(--a);}.sv.y{color:var(--y);}
+.card{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:16px;margin-bottom:16px;}
+.ctt{font-size:11px;font-weight:600;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.pb{width:100%;height:6px;background:var(--s2);border-radius:3px;overflow:hidden;margin:8px 0;}
+.pf{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:3px;transition:width .4s;}
+.sec{font-size:11px;font-weight:600;color:var(--m);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:10px;margin-top:20px;}
+.sec:first-child{margin-top:0;}
+label{font-size:12px;color:var(--m);display:block;margin-bottom:4px;}
+input[type=number]{width:100%;background:var(--s2);border:1px solid var(--b);
+  border-radius:6px;padding:8px 10px;color:var(--t);font-family:var(--mono);font-size:13px;outline:none;}
+input[type=number]:focus{border-color:var(--a);}
+input[type=range]{width:100%;appearance:none;background:transparent;margin:2px 0;}
+input[type=range]::-webkit-slider-track{height:4px;background:var(--b);border-radius:2px;}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--a);cursor:pointer;margin-top:-5px;}
+.tr{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;border-bottom:1px solid var(--b);}
+.tl2{font-size:13px;color:var(--t);}
+.tog{position:relative;width:38px;height:20px;background:var(--b);
+  border-radius:10px;cursor:pointer;transition:background .2s;}
+.tog.on{background:var(--a);}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;
+  border-radius:50%;background:white;transition:transform .2s;}
+.tog.on::after{transform:translateX(18px);}
+.btn{width:100%;padding:11px;border-radius:8px;border:none;font-family:var(--sans);
+  font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+.bs{background:linear-gradient(135deg,var(--a),var(--a2));color:white;margin-top:8px;}
+.bs:hover{opacity:.9;transform:translateY(-1px);}
+.bs:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.bx{background:transparent;border:1px solid var(--r);color:var(--r);margin-top:8px;}
+.bx:hover{background:var(--r);color:white;}.bx:disabled{opacity:.4;cursor:not-allowed;}
+.bsm{padding:6px 14px;border-radius:6px;border:1px solid var(--b);
+  background:var(--s2);color:var(--t);font-family:var(--sans);
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;width:auto;}
+.bsm:hover{border-color:var(--a);color:var(--a);}
+.log{background:#050810;border:1px solid var(--b);border-radius:10px;
+  height:250px;overflow-y:auto;padding:12px;font-family:var(--mono);font-size:12px;line-height:1.8;}
+.le{display:flex;gap:12px;}
+.lt{color:var(--m);flex-shrink:0;}.lm{color:var(--t);}
+.lm.error{color:var(--r);}.lm.warning{color:var(--y);}
+.tw{overflow:auto;border-radius:10px;border:1px solid var(--b);}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{background:var(--s);padding:9px 12px;text-align:left;font-size:10px;color:var(--m);
+  text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--b);
+  position:sticky;top:0;white-space:nowrap;}
+td{padding:9px 12px;border-bottom:1px solid var(--b);color:var(--t);}
+tr:last-child td{border-bottom:none;}tr:hover td{background:var(--s2);}
+.tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;font-family:var(--mono);}
+.tgg{background:rgba(16,185,129,.15);color:var(--g);}
+.tgr{background:rgba(239,68,68,.15);color:var(--r);}
+.tgb{background:rgba(0,212,255,.15);color:var(--a);}
+.tgy{background:rgba(245,158,11,.15);color:var(--y);}
+.cur{font-family:var(--mono);font-size:11px;color:var(--a);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;padding:6px 10px;background:var(--s2);
+  border-radius:6px;border:1px solid var(--b);margin-top:8px;}
+.nd{text-align:center;padding:50px;color:var(--m);}
+.wb{font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:4px;}
+.wb.on{background:rgba(16,185,129,.15);color:var(--g);}
+.wb.off{background:rgba(239,68,68,.15);color:var(--r);}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--b);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="hd">
+  <div class="logo">Minimo<span>Scraper</span></div>
+  <div style="display:flex;gap:12px;align-items:center">
+    <span id="wb" class="wb off">WS: off</span>
+    <div class="pill">
+      <div class="dot" id="sd"></div>
+      <span id="st" style="font-family:var(--mono)">IDLE</span>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+<aside class="sb">
+  <div class="sec">Page Range</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+    <div><label>From</label><input type="number" id="ps" value="1" min="1" max="100"></div>
+    <div><label>To</label><input type="number" id="pe" value="100" min="1" max="100"></div>
+  </div>
+  <div class="sec">Settings</div>
+  <div style="margin-bottom:10px">
+    <label>Workers</label>
+    <input type="number" id="wk" value="2" min="1" max="5">
+  </div>
+  <div style="margin-bottom:4px">
+    <label>Delay: <span id="d1">2</span>–<span id="d2">5</span>s</label>
+    <input type="range" id="dm" min="1" max="10" value="2" oninput="document.getElementById('d1').textContent=this.value">
+    <input type="range" id="dx" min="2" max="20" value="5" style="margin-top:4px" oninput="document.getElementById('d2').textContent=this.value">
+  </div>
+  <div class="sec">Options</div>
+  <div class="tr"><span class="tl2">Database Save</span>
+    <div class="tog on" id="tdb" onclick="this.classList.toggle('on')"></div></div>
+  <div class="tr" style="border:none"><span class="tl2">Proxy</span>
+    <div class="tog" id="tpx" onclick="this.classList.toggle('on')"></div></div>
+  <button class="btn bs" id="bst" onclick="startScraper()">▶ Start Scraping</button>
+  <button class="btn bx" id="bsp" onclick="stopScraper()" disabled>■ Stop</button>
+  <button class="btn" id="brs" onclick="resetScraper()" style="background:transparent;border:1px solid var(--m);color:var(--m);margin-top:8px;" title="Clear memory — re-scrape everything from scratch">↺ Reset Memory</button>
+  <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--b)">
+    <div class="sec" style="margin-top:0">Export</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="bsm btn" onclick="dl('csv')">↓ CSV (Excel)</button>
+      <button class="bsm btn" onclick="dl('json')">↓ JSON</button>
+      <button class="bsm btn" onclick="dl('xml')">↓ XML</button>
+    </div>
+  </div>
+</aside>
+
+<div class="ct">
+  <div class="tabs">
+    <div class="tab active" onclick="sw('monitor',this)">Monitor</div>
+    <div class="tab" onclick="sw('data',this)">Data (DB)</div>
+    <div class="tab" onclick="sw('failed',this)">Failed</div>
+  </div>
+
+  <!-- Monitor -->
+  <div class="tp active" id="tab-monitor">
+    <div class="sg">
+      <div class="sc"><div class="sl">Total URLs</div><div class="sv a" id="tt">0</div></div>
+      <div class="sc"><div class="sl">Success</div><div class="sv g" id="ts">0</div></div>
+      <div class="sc"><div class="sl">Failed</div><div class="sv r" id="tf">0</div></div>
+      <div class="sc"><div class="sl">Speed</div><div class="sv y" id="tp2">0</div>
+        <div style="font-size:11px;color:var(--m)">rec/min</div></div>
+    </div>
+    <div class="card">
+      <div class="ctt">Progress</div>
+      <div class="pb"><div class="pf" id="pf" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--m);margin-top:4px">
+        <span id="pt">0 / 0</span><span id="et"></span>
+      </div>
+      <div class="cur" id="cu">—</div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="ctt" style="margin-bottom:0">Activity Log</div>
+        <button class="bsm" onclick="document.getElementById('lc').innerHTML=''">Clear</button>
+      </div>
+      <div class="log" id="lc"></div>
+    </div>
+  </div>
+
+  <!-- Data -->
+  <div class="tp" id="tab-data">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div>
+        <div style="font-size:20px;font-weight:800">company_list</div>
+        <div style="font-size:13px;color:var(--m);margin-top:2px">
+          DB: <b id="dbt">—</b> 件 &nbsp;|&nbsp; DB: scraping_all_data
+        </div>
+      </div>
+      <button class="bsm" onclick="loadData()">↻ Refresh</button>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr>
+          <th>店名</th><th>郵便番号</th><th>都道府県</th>
+          <th>住所１</th><th>Tel1</th><th>Tel2(0120/0800)</th>
+          <th>URL</th><th>備考</th><th>リスト取得日</th><th>媒体等</th>
+        </tr></thead>
+        <tbody id="dtb">
+          <tr><td colspan="10" class="nd">Run the scraper to see data</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Failed -->
+  <div class="tp" id="tab-failed">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:20px;font-weight:800">Failed URLs</div>
+      <button class="bsm" onclick="loadFailed()">↻ Refresh</button>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>URL</th><th>Error</th><th>Message</th><th>Failed At</th></tr></thead>
+        <tbody id="ftb"><tr><td colspan="4" class="nd">No failures yet</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+const API='http://localhost:8000';
+let ws=null;
+
+// 備考カラー
+function bikoTag(v){
+  if(!v||v==='—') return '—';
+  const map={'東京本社':'tgb','東京郊外':'tgb','名古屋営業所':'tgy',
+    '大阪営業所':'tgy','仙台・盛岡営業所':'tgg','福岡営業所':'tgg','ZOOM':'tgr','未判定':'tgr'};
+  const cls=map[v]||'tgb';
+  return `<span class="tag ${cls}">${v}</span>`;
+}
+
+function connectWS(){
+  ws=new WebSocket('ws://localhost:8000/ws');
+  ws.onopen=()=>{const b=document.getElementById('wb');b.className='wb on';b.textContent='WS: on';};
+  ws.onmessage=e=>{const m=JSON.parse(e.data);
+    if(m.type==='state')updateUI(m.data);if(m.type==='log')appendLog(m.data);};
+  ws.onclose=()=>{const b=document.getElementById('wb');b.className='wb off';b.textContent='WS: off';
+    setTimeout(connectWS,3000);};
+}
+
+function updateUI(s){
+  const status=s.status||'idle';
+  document.getElementById('sd').className='dot '+status;
+  document.getElementById('st').textContent=status.toUpperCase();
+  document.getElementById('tt').textContent=s.total||0;
+  document.getElementById('ts').textContent=s.success||0;
+  document.getElementById('tf').textContent=s.failed||0;
+  document.getElementById('tp2').textContent=s.speed||0;
+  const done=(s.success||0)+(s.failed||0),total=s.total||0;
+  const pct=total>0?(done/total*100).toFixed(1):0;
+  document.getElementById('pf').style.width=pct+'%';
+  document.getElementById('pt').textContent=`${done} / ${total} (${pct}%)`;
+  document.getElementById('et').textContent=s.eta?`ETA: ${Math.floor(s.eta/60)}m ${s.eta%60}s`:'';
+  document.getElementById('cu').textContent=s.current_url||'—';
+  const running=status==='running'||status==='stopping';
+  document.getElementById('bst').disabled=running;
+  document.getElementById('bsp').disabled=!running||status==='stopping';
+  if(s.logs&&s.logs.length&&!document.getElementById('lc').children.length)s.logs.forEach(appendLog);
+}
+
+function appendLog(e){
+  const c=document.getElementById('lc'),d=document.createElement('div');
+  d.className='le';
+  const lv=(e.level||'info').toLowerCase();
+  const cls=lv==='error'?'error':lv==='warning'?'warning':'';
+  d.innerHTML=`<span class="lt">${e.time}</span><span class="lm ${cls}">${e.msg}</span>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+
+async function startScraper(){
+  const cfg={
+    page_start:parseInt(document.getElementById('ps').value),
+    page_end:parseInt(document.getElementById('pe').value),
+    workers:parseInt(document.getElementById('wk').value),
+    db_enabled:document.getElementById('tdb').classList.contains('on'),
+    proxy_enabled:document.getElementById('tpx').classList.contains('on'),
+  };
+  const r=await fetch(`${API}/api/scraper/start`,{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+  const d=await r.json();if(!d.ok)alert(d.msg);
+}
+
+async function stopScraper(){await fetch(`${API}/api/scraper/stop`,{method:'POST'});}
+
+async function loadData(){
+  const r=await fetch(`${API}/api/data/profiles`);
+  const d=await r.json();
+  document.getElementById('dbt').textContent=d.total;
+  const tb=document.getElementById('dtb');
+  if(!d.rows.length){tb.innerHTML='<tr><td colspan="10" class="nd">No data yet</td></tr>';return;}
+  tb.innerHTML=d.rows.map(row=>`<tr>
+    <td style="white-space:nowrap;font-weight:600">${row['店名']||'—'}</td>
+    <td style="font-family:var(--mono);font-size:11px">${row['郵便番号']||'—'}</td>
+    <td>${row['都道府県']?`<span class="tag tgb">${row['都道府県']}</span>`:'—'}</td>
+    <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">${row['住所１']||'—'}</td>
+    <td>${row['Tel1']?`<span class="tag tgg">${row['Tel1']}</span>`:'<span class="tag tgr">—</span>'}</td>
+    <td>${row['Tel2']?`<span class="tag tgb">${row['Tel2']}</span>`:'—'}</td>
+    <td>${row['URL']?`<a href="${row['URL']}" target="_blank" style="color:var(--a);font-size:11px;font-family:var(--mono)">link</a>`:'—'}</td>
+    <td>${bikoTag(row['備考'])}</td>
+    <td style="font-family:var(--mono);font-size:11px">${row['リスト取得日']||'—'}</td>
+    <td><span class="tag tgb">${row['媒体等']||'minimo'}</span></td>
+  </tr>`).join('');
+}
+
+async function loadFailed(){
+  const r=await fetch(`${API}/api/data/failed`);
+  const d=await r.json();
+  const tb=document.getElementById('ftb');
+  if(!d.rows.length){tb.innerHTML='<tr><td colspan="4" class="nd">No failures</td></tr>';return;}
+  tb.innerHTML=d.rows.map(row=>`<tr>
+    <td style="font-family:var(--mono);font-size:11px">${row.url}</td>
+    <td><span class="tag tgr">${row.error_type||'—'}</span></td>
+    <td style="font-size:11px;color:var(--m);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${row.message||'—'}</td>
+    <td style="font-family:var(--mono);font-size:11px;color:var(--m)">${
+      row.failed_at?new Date(row.failed_at).toLocaleString('ja-JP'):'—'}</td>
+  </tr>`).join('');
+}
+
+async function resetScraper(){
+  if(!confirm("Clear all scraped URL memory? Next Start will re-scrape everything from scratch.")) return;
+  const r=await fetch(`${API}/api/scraper/reset`,{method:"POST"});
+  const d=await r.json();
+  alert(d.msg);
+}
+
+function dl(fmt){window.open(`${API}/api/export/${fmt}`,'_blank');}
+
+function sw(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='data')loadData();
+  if(name==='failed')loadFailed();
+}
+
+connectWS();
+fetch(`${API}/api/scraper/status`).then(r=>r.json()).then(updateUI).catch(()=>{});
+</script>
+</body>
+</html>

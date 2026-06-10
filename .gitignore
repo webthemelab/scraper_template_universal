@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.py[cod]
+logs/
+result.*
+failed_urls.json
+.venv/
+venv/
+dist/
+build/
+.pytest_cache/
